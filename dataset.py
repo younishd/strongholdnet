@@ -10,7 +10,7 @@ def parse_tree_generator(file):
         nonlocal stronghold
         if i < 0:
             return Node("None")
-        return Node(stronghold[i][0], exit=j, children=[create_node(int(i), j+1) for j, i in enumerate(stronghold[i][1:])])
+        return Node(stronghold[i][0], exit=j, children=[create_node(int(i), j) for j, i in enumerate(stronghold[i][1:])])
     with open(file, 'r') as f:
         while True:
             line = f.readline()
@@ -58,7 +58,7 @@ def dump_dataset(root: Node):
 
 
 def main():
-    print("depth prev_room prev_exit room exit_1 exit_2 exit_3 exit_4 exit_5 exit_portal")
+    print("depth prev_room prev_exit room exit_0 exit_1 exit_2 exit_3 exit_4 exit_portal")
 
     stronghold_file = sys.argv[1] if len(sys.argv) > 1 else '100k_strongholds.txt'
 
