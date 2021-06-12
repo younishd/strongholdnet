@@ -14,7 +14,8 @@ def parse_tree_generator(file):
         return Node(
                 stronghold[i][0],
                 exit=j,
-                children=[create_node(int(i), j+1) for j, i in enumerate(stronghold[i][1:])])
+                orientation=stronghold[i][1],
+                children=[create_node(int(i), j+1) for j, i in enumerate(stronghold[i][2:])])
     with open(file, 'r') as f:
         while True:
             line = f.readline()
@@ -48,11 +49,11 @@ def dump_dataset(root: Node):
                 filter_=lambda x: x.name not in stupid_rooms and len([c for c in x.children if c.name not in stupid_rooms]) > 0)])
     (upwards, common, downwards) = Walker().walk(random_start, portal)
     for room in upwards:
-        X.append((room.name, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        X.append((room.name, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         y.append(0)
-    X.append((common.name, common.parent.name, common.exit, *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
+    X.append((common.name, common.orientation, common.parent.name, common.exit, *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
     for room in downwards:
-        X.append((room.name, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        X.append((room.name, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         y.append(room.exit)
     X = X[:-1]
     list(map(lambda x: print(*x[0], x[1]), zip(X, y)))
@@ -64,10 +65,10 @@ def print_stronghold_tree(root: Node):
 
 
 def main():
-    stronghold_file = sys.argv[1] if len(sys.argv) > 1 else '100k_strongholds.txt'
+    stronghold_file = sys.argv[1] if len(sys.argv) > 1 else '1m_strongholds.txt'
     random.seed(1337)
 
-    print("room parent_room parent_exit child_room_1 child_room_2 child_room_3 child_room_4 child_room_5 exit")
+    print("room orientation parent_room parent_exit child_room_1 child_room_2 child_room_3 child_room_4 child_room_5 exit")
     list(map(dump_dataset, parse_tree_generator(stronghold_file)))
 
 
