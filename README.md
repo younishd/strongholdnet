@@ -1,24 +1,33 @@
 # StrongholdNet
 
-Generate the dataset from the stronghold file:
+1. Download raw stronghold data from [here](https://drive.google.com/file/d/1N3TjOB29kHpysWrq7yHVjB-v2g5IMgdV/view?usp=sharing).
+
+1. Clone this repository
 
 ```
-python dataset.py 100k_strongholds.txt > 100k_dataset.csv
+git clone https://github.com/younishd/strongholdnet.git
 ```
 
-The resulting dataset should look like this:
+1. Install dependencies etc.
 
 ```
-depth prev_room prev_exit room exit_0 exit_1 exit_2 exit_3 exit_4 exit_portal
-0 Start 0 FiveWayCrossing Corridor LeftTurn None Corridor Stairs 0
-0 Start 0 FiveWayCrossing Corridor RightTurn None Corridor RightTurn 0
-2 RightTurn 0 Corridor SquareRoom None Corridor None None 0
-0 Start 0 FiveWayCrossing Stairs None None None Corridor 4
-1 FiveWayCrossing 4 Corridor Corridor SpiralStaircase Stairs None None 0
-…
-5 LeftTurn 0 Corridor SquareRoom None Corridor None None 0
-6 Corridor 0 SquareRoom Corridor RightTurn Corridor None None 2
-7 SquareRoom 2 Corridor Corridor LeftTurn SmallCorridor None None 0
-0 Start 0 FiveWayCrossing LeftTurn Corridor None RightTurn None 0
-4 LeftTurn 0 FiveWayCrossing LeftTurn None SpiralStaircase Corridor None 0
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
+
+1. Generate the sequential dataset:
+
+```
+python dataset_rnn.py 100k_strongholds.txt > 100k_dataset_rnn.csv
+```
+
+1. Run JupyterLab and open the notebook: `stronghold_rnn.ipynb`
+
+```
+jupyter lab
+```
+
+1. ???
+
+1. Debug
