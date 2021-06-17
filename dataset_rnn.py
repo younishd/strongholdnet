@@ -49,9 +49,21 @@ def dump_good_dataset(root: Node, stronghold: int):
                 filter_=lambda x: x.name not in stupid_rooms and len([c for c in x.children if c.name not in stupid_rooms]) > 0)])
     (upwards, common, downwards) = Walker().walk(random_start, portal)
     for room in upwards:
-        X.append((room.name, 0, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        X.append((
+                room.name,
+                0,
+                room.orientation,
+                room.parent.name,
+                room.exit,
+                *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         y.append(0)
-    X.append((common.name, 0, common.orientation, common.parent.name, common.exit, *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
+    X.append((
+            common.name,
+            0,
+            common.orientation,
+            common.parent.name,
+            common.exit,
+            *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
     for room in downwards:
         X.append((room.name, 1, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         y.append(room.exit)
@@ -74,7 +86,13 @@ def dump_bad_dataset(root: Node, stronghold: int):
                 filter_=lambda x: x.name not in stupid_rooms and len([c for c in x.children if c.name not in stupid_rooms]) > 0)])
     (upwards, common, downwards) = Walker().walk(random_start, library)
     for room in upwards:
-        X.append((room.name, 0, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        X.append((
+                room.name,
+                0,
+                room.orientation,
+                room.parent.name,
+                room.exit,
+                *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         (upwards_portal, common_portal, downwards_portal) = Walker().walk(room, portal)
         if len(upwards_portal) > 0:
             label = 0
@@ -83,7 +101,13 @@ def dump_bad_dataset(root: Node, stronghold: int):
         else:
             raise ValueError
         y.append(label)
-    X.append((common.name, 0, common.orientation, common.parent.name, common.exit, *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
+    X.append((
+            common.name,
+            0,
+            common.orientation,
+            common.parent.name,
+            common.exit,
+            *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
     (upwards_portal, common_portal, downwards_portal) = Walker().walk(common, portal)
     if len(upwards_portal) > 0:
         label = 0
@@ -93,7 +117,13 @@ def dump_bad_dataset(root: Node, stronghold: int):
         raise ValueError
     y.append(label)
     for room in downwards:
-        X.append((room.name, 1, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        X.append((
+                room.name,
+                1,
+                room.orientation,
+                room.parent.name,
+                room.exit,
+                *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         (upwards_portal, common_portal, downwards_portal) = Walker().walk(room, portal)
         if len(upwards_portal) > 0:
             label = 0
@@ -102,6 +132,39 @@ def dump_bad_dataset(root: Node, stronghold: int):
         else:
             raise ValueError
         y.append(label)
+    list(map(lambda x: print(stronghold, *x[0], x[1]), zip(X, y)))
+    
+    
+def dump_ugly_dataset(root: Node, stronghold: int):
+    X = []
+    y = []
+    stupid_rooms = ['Start', 'SmallCorridor', 'Library', 'PortalRoom', 'None']
+    portal = find_by_attr(root, 'PortalRoom')
+    random_start = random.choice([
+            node for node in LevelOrderIter(
+                root,
+                maxlevel=3,
+                filter_=lambda x: x.name not in stupid_rooms and len([c for c in x.children if c.name not in stupid_rooms]) > 0)])
+    room = random_start
+    for i in range(50):
+        next_exit = random.choice([0] if room.parent.name not in stupid_rooms else [] + [j+1 for j, r in enumerate(room.children) if r.name not in stupid_rooms])
+        next_room = ([room.parent, *room.children])[next_exit]
+        X.append((
+                next_room.name,
+                0 if next_exit == 0 else 1,
+                next_room.orientation,
+                next_room.parent.name,
+                next_room.exit,
+                *([c.name for c in next_room.children] + ['None'] * (5 - len(next_room.children)))))
+        (upwards_portal, common_portal, downwards_portal) = Walker().walk(next_room, portal)
+        if len(upwards_portal) > 0:
+            label = 0
+        elif len(downwards_portal) > 0:
+            label = downwards_portal[0].exit
+        else:
+            raise ValueError
+        y.append(label)
+        room = next_room
     list(map(lambda x: print(stronghold, *x[0], x[1]), zip(X, y)))
 
 
@@ -120,6 +183,8 @@ def main():
         dump_good_dataset(root, stronghold)
         stronghold += 1
         dump_bad_dataset(root, stronghold)
+        stronghold += 1
+        dump_ugly_dataset(root, stronghold)
         stronghold += 1
 
 
