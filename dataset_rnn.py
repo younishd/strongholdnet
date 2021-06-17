@@ -118,6 +118,7 @@ def main():
     stronghold = 0
     for root in parse_tree_generator(stronghold_file):
         dump_good_dataset(root, stronghold)
+        stronghold += 1
         dump_bad_dataset(root, stronghold)
         stronghold += 1
 
