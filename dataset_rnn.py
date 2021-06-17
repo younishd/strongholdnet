@@ -3,7 +3,7 @@
 import sys
 import random
 from anytree import Node, RenderTree, Walker, LevelOrderIter
-from anytree.search import find_by_attr
+from anytree.search import find_by_attr, findall_by_attr
 
 
 def parse_tree_generator(file):
@@ -37,7 +37,7 @@ def parse_tree_generator(file):
             yield root
 
 
-def dump_dataset(root: Node, stronghold: int):
+def dump_good_dataset(root: Node, stronghold: int):
     X = []
     y = []
     stupid_rooms = ['Start', 'SmallCorridor', 'Library', 'PortalRoom', 'None']
@@ -57,6 +57,52 @@ def dump_dataset(root: Node, stronghold: int):
         y.append(room.exit)
     X = X[:-1]
     list(map(lambda x: print(stronghold, *x[0], x[1]), zip(X, y)))
+    
+def dump_bad_dataset(root: Node, stronghold: int):
+    X = []
+    y = []
+    stupid_rooms = ['Start', 'SmallCorridor', 'Library', 'PortalRoom', 'None']
+    portal = find_by_attr(root, 'PortalRoom')
+    library = findall_by_attr(root, 'Library')
+    if len(library) == 0:
+        return
+    library = random.choice(library)
+    random_start = random.choice([
+            node for node in LevelOrderIter(
+                root,
+                maxlevel=3,
+                filter_=lambda x: x.name not in stupid_rooms and len([c for c in x.children if c.name not in stupid_rooms]) > 0)])
+    (upwards, common, downwards) = Walker().walk(random_start, library)
+    for room in upwards:
+        X.append((room.name, 0, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        (upwards_portal, common_portal, downwards_portal) = Walker().walk(room, portal)
+        if len(upwards_portal) > 0:
+            label = 0
+        elif len(downwards_portal) > 0:
+            label = downwards_portal[0].exit
+        else:
+            raise ValueError
+        y.append(label)
+    X.append((common.name, 0, common.orientation, common.parent.name, common.exit, *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
+    (upwards_portal, common_portal, downwards_portal) = Walker().walk(common, portal)
+    if len(upwards_portal) > 0:
+        label = 0
+    elif len(downwards_portal) > 0:
+        label = downwards_portal[0].exit
+    else:
+        raise ValueError
+    y.append(label)
+    for room in downwards:
+        X.append((room.name, 1, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        (upwards_portal, common_portal, downwards_portal) = Walker().walk(room, portal)
+        if len(upwards_portal) > 0:
+            label = 0
+        elif len(downwards_portal) > 0:
+            label = downwards_portal[0].exit
+        else:
+            raise ValueError
+        y.append(label)
+    list(map(lambda x: print(stronghold, *x[0], x[1]), zip(X, y)))
 
 
 def print_stronghold_tree(root: Node):
@@ -71,7 +117,8 @@ def main():
     print("stronghold room downwards orientation parent_room parent_exit child_room_1 child_room_2 child_room_3 child_room_4 child_room_5 exit")
     stronghold = 0
     for root in parse_tree_generator(stronghold_file):
-        dump_dataset(root, stronghold)
+        dump_good_dataset(root, stronghold)
+        dump_bad_dataset(root, stronghold)
         stronghold += 1
 
 
