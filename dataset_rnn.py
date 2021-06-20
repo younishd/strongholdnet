@@ -48,24 +48,26 @@ def dump_good_dataset(root: Node, stronghold: int):
                 maxlevel=6,
                 filter_=lambda x: x.name not in stupid_rooms and len([c for c in x.children if c.name not in stupid_rooms]) > 0)])
     (upwards, common, downwards) = Walker().walk(random_start, portal)
+    entry = random.choice([i+1 for i, r in enumerate(random_start.children) if r.name != 'None'])
     for room in upwards:
         X.append((
                 room.name,
-                0,
+                entry,
                 room.orientation,
                 room.parent.name,
                 room.exit,
                 *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         y.append(0)
+        entry = room.exit
     X.append((
             common.name,
-            0,
+            entry,
             common.orientation,
             common.parent.name,
             common.exit,
             *([c.name for c in common.children] + ['None'] * (5 - len(common.children)))))
     for room in downwards:
-        X.append((room.name, 1, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
+        X.append((room.name, 0, room.orientation, room.parent.name, room.exit, *([c.name for c in room.children] + ['None'] * (5 - len(room.children)))))
         y.append(room.exit)
     X = X[:-1]
     list(map(lambda x: print(stronghold, *x[0], x[1]), zip(X, y)))
@@ -177,15 +179,15 @@ def main():
     stronghold_file = sys.argv[1] if len(sys.argv) > 1 else '100k_strongholds.txt'
     random.seed(1337)
 
-    print("stronghold room downwards orientation parent_room parent_exit child_room_1 child_room_2 child_room_3 child_room_4 child_room_5 exit")
+    print("stronghold room entry orientation parent_room parent_exit child_room_1 child_room_2 child_room_3 child_room_4 child_room_5 exit")
     stronghold = 0
     for root in parse_tree_generator(stronghold_file):
         dump_good_dataset(root, stronghold)
         stronghold += 1
-        dump_bad_dataset(root, stronghold)
-        stronghold += 1
-        dump_ugly_dataset(root, stronghold)
-        stronghold += 1
+        #dump_bad_dataset(root, stronghold)
+        #stronghold += 1
+        #dump_ugly_dataset(root, stronghold)
+        #stronghold += 1
 
 
 if __name__ == '__main__':
